@@ -18,7 +18,7 @@ public class RPCServer {
         return fib(n - 1) + fib(n - 2);
     }
 
-    //Fuzzy search card API
+    //Testing card API
     public static String searchById(String Id){
         System.out.println("-----searchById:input: " + Id);
         Client client = ClientBuilder.newBuilder().build();
@@ -26,7 +26,7 @@ public class RPCServer {
         WebTarget target = client.target("https://db.ygoprodeck.com/api/v5/cardinfo.php")
                 .queryParam("fname", Id.toString());
         System.out.println("-----searchById:webTarget: " + target.getUri());
-        String response = target.request().get().readEntity(String.class);
+        String response = target.request().get().readEntity(String.class);;//.request(MediaType.APPLICATION_JSON).toString();
         //System.out.println("-----searchById:response: " + response);
         return response;
     }
@@ -34,7 +34,7 @@ public class RPCServer {
 
 
 
-        public static void main(String[] argv) throws Exception {
+    public static void main(String[] argv) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("crane.rmq.cloudamqp.com");
         factory.setUsername("riikuyvl");
@@ -43,8 +43,8 @@ public class RPCServer {
 
         try (Connection connection = factory.newConnection();
              Channel channel = connection.createChannel()) {
-            channel.queueDeclare(RPC_QUEUE_fuzzy, false, false, false, null);
-            channel.queuePurge(RPC_QUEUE_fuzzy);
+            channel.queueDeclare(RPC_QUEUE_full_info, false, false, false, null);
+            channel.queuePurge(RPC_QUEUE_full_info);
 
             channel.basicQos(1);
 
@@ -81,7 +81,7 @@ public class RPCServer {
                 }
             };
 
-            channel.basicConsume(RPC_QUEUE_fuzzy, false, deliverCallback, (consumerTag -> { }));
+            channel.basicConsume(RPC_QUEUE_full_info, false, deliverCallback, (consumerTag -> { }));
             // Wait and be prepared to consume the message from RPC client.
             while (true) {
                 synchronized (monitor) {

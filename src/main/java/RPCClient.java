@@ -13,7 +13,7 @@ public class RPCClient implements AutoCloseable {
 
     private Connection connection;
     private Channel channel;
-    private String requestQueueName = "rpc_queue";
+    private String requestQueueName = "ver_informacion_detallada";
 
     public RPCClient() throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
