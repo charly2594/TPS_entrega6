@@ -1,12 +1,22 @@
 import com.rabbitmq.client.*;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
+import java.io.StringReader;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 
+//import javax.json.Json;
+//import javax.json.JsonObject;
+//import javax.json.JsonReader;
 
-public class RPCServerFullInfo {
+public class RPCServerBasicInfo {
 
     private static final String RPC_QUEUE_basic_info = "ver_informacion_basica";
     private static final String RPC_QUEUE_full_info = "ver_informacion_detallada";
@@ -18,7 +28,7 @@ public class RPCServerFullInfo {
         return fib(n - 1) + fib(n - 2);
     }
 
-    //Testing card API
+    //API request and simplification
     public static String searchById(String Id){
         System.out.println("-----searchById:input: " + Id);
         Client client = ClientBuilder.newBuilder().build();
@@ -26,9 +36,23 @@ public class RPCServerFullInfo {
         WebTarget target = client.target("https://db.ygoprodeck.com/api/v5/cardinfo.php")
                 .queryParam("name", Id.toString());
         System.out.println("-----searchById:webTarget: " + target.getUri());
-        String response = target.request().get().readEntity(String.class);;//.request(MediaType.APPLICATION_JSON).toString();
-        //System.out.println("-----searchById:response: " + response);
-        return response;
+        String response = target.request().get().readEntity(String.class);
+        System.out.println("-----response: " + response);
+        //Transforming String to Json and removing List brackets:
+        JSONObject obj = new JSONObject(response.substring(1, response.length() - 1));
+        System.out.println(obj.getString("name"));
+
+        JSONObject jsonResponse = new JSONObject();
+        jsonResponse.put("name", obj.get("name"));
+        jsonResponse.put("id", obj.get("id"));
+        jsonResponse.put("image_url_small", ( (JSONObject)(
+                ( (JSONArray) obj.get("card_images"))
+                        .getJSONObject(0) ) )
+                .get("image_url_small"));
+        //System.out.println("--------digging: "+  ( (JSONObject)( ( (JSONArray) obj.get("card_images")).getJSONObject(0) ) ).get("image_url_small"));
+
+
+        return jsonResponse.toString();
     }
 
 
@@ -43,8 +67,8 @@ public class RPCServerFullInfo {
 
         try (Connection connection = factory.newConnection();
              Channel channel = connection.createChannel()) {
-            channel.queueDeclare(RPC_QUEUE_full_info, false, false, false, null);
-            channel.queuePurge(RPC_QUEUE_full_info);
+            channel.queueDeclare(RPC_QUEUE_basic_info, false, false, false, null);
+            channel.queuePurge(RPC_QUEUE_basic_info);
 
             channel.basicQos(1);
 
@@ -67,9 +91,9 @@ public class RPCServerFullInfo {
                     //response += fib(n);
                     System.out.println(" [.] id or name of card: " + message);
                     response = searchById(message);
-                    System.out.println(" [.] response: " + response);
+                    //System.out.println(" [.] response: " + response);
                 } catch (RuntimeException e) {
-                    System.out.println(" [.] " + e.toString());
+                    System.out.println(" [.] error-->" + e.toString());
                     String message = new String(delivery.getBody(), "UTF-8");
                 } finally {
                     channel.basicPublish("", delivery.getProperties().getReplyTo(), replyProps, response.getBytes("UTF-8"));
@@ -81,7 +105,7 @@ public class RPCServerFullInfo {
                 }
             };
 
-            channel.basicConsume(RPC_QUEUE_full_info, false, deliverCallback, (consumerTag -> { }));
+            channel.basicConsume(RPC_QUEUE_basic_info, false, deliverCallback, (consumerTag -> { }));
             // Wait and be prepared to consume the message from RPC client.
             while (true) {
                 synchronized (monitor) {

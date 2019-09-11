@@ -42,6 +42,17 @@
             <artifactId>resteasy-client</artifactId>
             <version>3.0.2.Final</version>
         </dependency>
+        <!--dependency>
+            <groupId>javax.json</groupId>
+            <artifactId>javax.json-api</artifactId>
+            <version>1.1.4</version>
+        </dependency-->
+        <!-- https://mvnrepository.com/artifact/org.json/json -->
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20190722</version>
+        </dependency>
     </dependencies>
 
     <properties>

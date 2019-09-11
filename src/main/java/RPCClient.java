@@ -13,7 +13,7 @@ public class RPCClient implements AutoCloseable {
 
     private Connection connection;
     private Channel channel;
-    private String requestQueueName = "ver_informacion_detallada";
+    private String requestQueueName = "ver_informacion_basica";
 
     public RPCClient() throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
@@ -33,12 +33,17 @@ public class RPCClient implements AutoCloseable {
                 //System.out.println(" [x] Requesting fib(" + i_str + ")");
                 //String response = fibonacciRpc.call(i_str);
                 //System.out.println(" [.] Got '" + response + "'");
+            /*
             for (int i = 1; i < 4; i++) {
                 String i_str = Integer.toString(i);
                 System.out.println(i_str);
                 String response = fibonacciRpc.call("harpie lady " + i_str);
                 System.out.println(" [.] Got '" + response + "'");
             }
+            */
+            String msg = "Neos Fusion";
+            String response = fibonacciRpc.call(msg);
+            System.out.println(" [.] Got '" + response + "'");
         } catch (IOException | TimeoutException | InterruptedException e) {
             e.printStackTrace();
         }
