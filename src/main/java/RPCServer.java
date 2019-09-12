@@ -12,11 +12,7 @@ public class RPCServer {
     private static final String RPC_QUEUE_full_info = "ver_informacion_detallada";
     private static final String RPC_QUEUE_fuzzy = "busqueda_parcial";
 
-    private static int fib(int n) {
-        if (n == 0) return 0;
-        if (n == 1) return 1;
-        return fib(n - 1) + fib(n - 2);
-    }
+
 
     //Fuzzy search card API
     public static String searchById(String Id){
